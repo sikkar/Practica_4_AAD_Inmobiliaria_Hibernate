@@ -7,6 +7,7 @@ package com.izv.controlador;
 
 import com.izv.hibernate.Fotos;
 import com.izv.hibernate.Inmueble;
+import com.izv.modelo.ControlDB;
 import com.izv.modelo.ModeloFoto;
 import com.izv.modelo.ModeloInmueble;
 import java.io.FileOutputStream;
@@ -14,10 +15,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
@@ -25,6 +31,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  *
@@ -35,6 +44,7 @@ import javax.servlet.http.Part;
 public class ControladorAndroid extends HttpServlet {
 
     SimpleDateFormat format;
+    JSONObject obj = new JSONObject();
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -50,6 +60,7 @@ public class ControladorAndroid extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         boolean forward = false;
         String target, op, action, view;
+        ControlDB bd;
 
         target = request.getParameter("target");
         op = request.getParameter("op");
@@ -69,9 +80,9 @@ public class ControladorAndroid extends HttpServlet {
             inmueble.setPrecio(request.getParameter("precio"));
             inmueble.setFechaalta(date);
             ModeloInmueble.insert(inmueble);
-            Inmueble inm=ModeloInmueble.get(inmueble.getId()+"");
+            Inmueble inm = ModeloInmueble.get(inmueble.getId() + "");
             try (PrintWriter out = response.getWriter()) {
-                out.println(inm.getId()+""); 
+                out.println(inm.getId() + "");
             }
         } else {
             if (target.equals("inmobiliaria") && op.equals("imagen") && action.equals("op")) {
@@ -109,6 +120,53 @@ public class ControladorAndroid extends HttpServlet {
                     } else {
                         out.println("foto subida"); // respuesta json chapucera
                     }
+                }
+            } else {
+                if (target.equals("bar")) {
+                    try {
+                        bd = new ControlDB();
+                        bd.cargarDriver();
+                        bd.conectar();
+                        response.setContentType("application/json");
+                        /*
+                         int r = bd.ejecutarDelete("delete from pedidos where idPedido=52");
+                         System.out.println(r);
+                         */
+//                        String fechaHora = getFecha();
+//                        String consulta = "insert into pedidos values(0, '" + fechaHora + "', 0, 0, null, 'admin ', 6, 1)";
+//                        bd.ejecutarInsert(consulta);
+                        ResultSet r = bd.ejecutarSelect("Select * from zona");
+                        JSONArray array = new JSONArray();
+                        ResultSetMetaData rsMetaData = r.getMetaData();
+                        int columns = rsMetaData.getColumnCount();
+                        try {
+                            while (r.next()) {
+                                JSONObject objetoJSON = new JSONObject();
+                                for (int i = 1; i <= columns; i++) {
+                                    objetoJSON.put(rsMetaData.getColumnLabel(i),r.getString(i));
+                                }
+                                System.out.println(objetoJSON+"\n");
+//                                System.out.println(r.getString(1) + " " + r.getString(2) + " " + r.getString(3)
+//                                        + " " + r.getString(4));
+                                array.put(objetoJSON);
+                            }
+                        } catch (SQLException ex) {
+                            Logger.getLogger(ControladorAndroid.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                        PrintWriter out = response.getWriter();
+                        out.print(array);
+                        out.flush();
+//                        obj.put("nombre", "Angel");
+//                        obj.put("password", "1234");
+//                        System.out.println("JSON " + obj.toString());
+//                        System.out.println(obj.getString("nombre") + " " + obj.getString("password"));
+
+                    } catch (JSONException ex) {
+                        Logger.getLogger(Controlador.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (SQLException ex) {
+                        Logger.getLogger(ControladorAndroid.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+
                 }
             }
         }

@@ -7,6 +7,7 @@ package com.izv.controlador;
 
 import com.izv.hibernate.Fotos;
 import com.izv.hibernate.Inmueble;
+import com.izv.modelo.ControlDB;
 import com.izv.modelo.ModeloFoto;
 import com.izv.modelo.ModeloInmueble;
 import java.io.File;
@@ -15,6 +16,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -30,6 +33,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  *
@@ -55,7 +60,7 @@ public class Controlador extends HttpServlet {
         String destino = "index.html";
         boolean forward = false;
         String target, op, action, view;
-
+        
         target = request.getParameter("target");
         op = request.getParameter("op");
         action = request.getParameter("action");
@@ -165,7 +170,7 @@ public class Controlador extends HttpServlet {
                                                 forward = false;
                                                 ModeloFoto.delete(request.getParameter("id"));
                                                 destino = "control?target=inmobiliaria&op=select&action=view";
-                                            }
+                                            } 
                                         }
                                     }
                                 }
@@ -181,6 +186,12 @@ public class Controlador extends HttpServlet {
         } else {
             response.sendRedirect(destino);
         }
+    }
+
+    private String getFecha() {
+        Date now = new Date();
+        SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return formato.format(now);
     }
 
 // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
