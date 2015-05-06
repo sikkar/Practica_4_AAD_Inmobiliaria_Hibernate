@@ -135,7 +135,7 @@ public class ControladorAndroid extends HttpServlet {
 //                        String fechaHora = getFecha();
 //                        String consulta = "insert into pedidos values(0, '" + fechaHora + "', 0, 0, null, 'admin ', 6, 1)";
 //                        bd.ejecutarInsert(consulta);
-                        ResultSet r = bd.ejecutarSelect("Select * from zona");
+                        ResultSet r = bd.ejecutarSelect("Select * from pedidos");
                         JSONArray array = new JSONArray();
                         ResultSetMetaData rsMetaData = r.getMetaData();
                         int columns = rsMetaData.getColumnCount();
